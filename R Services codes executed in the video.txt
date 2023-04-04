@@ -1,0 +1,210 @@
+/*-------------------------- R code ----------------------------*/
+
+/* 1. Add two numbers*/
+print(23.9 + 11.6);
+
+/*2. Create a vector*/
+apple <- c("red","green","yellow")
+print(apple)
+
+/*3. Create a matrix */
+M = matrix( c('a','a','b','c','b','a'), nrow=2,ncol=3,byrow = TRUE)
+print(M)
+
+/*4. Create the data frame */
+BMI <- data.frame(
+    gender = c("Male", "Male","Female"),
+    height = c(152, 171.5, 165),
+    weight = c(81,93, 78),
+    Age =c(42,38,26)
+    )
+print(BMI)
+
+
+
+/*-------------------------- SQL queries -----------------------------*/
+
+/*1. Check the table of "SalesPerson" under "Sales" schema */
+USE AdventureWorks2016
+
+SELECT * 
+FROM Sales.SalesPerson;
+
+/*2. Select only five (5) tables */
+SELECT BusinessEntityID, TerritoryID, SalesQuota, SalesYTD, SalesLastYear
+FROM Sales.SalesPerson;
+
+/*3. Remove null values from the selected tables */
+SELECT BusinessEntityID, TerritoryID, SalesQuota, SalesYTD, SalesLastYear
+FROM Sales.SalesPerson
+WHERE TerritoryID IS NOT NULL;
+
+/*4. Remove null values from the selected tables where SalesQuota is less than 300,000*/
+SELECT BusinessEntityID, TerritoryID, SalesQuota, SalesYTD, SalesLastYear
+FROM Sales.SalesPerson
+WHERE TerritoryID IS NOT NULL AND SalesQuota < 300000;
+
+
+/*--------------------------R Services------------------------------*/
+
+/*1*/
+/*1. Check the configuration settings for external scripts*/
+sp_configure
+
+/*2. Check if R code will run in SQL Server without changing the configuration settings*/
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'print("This is R Services class");'
+
+/*3. Change the value of "config_value" from 0 to 1*/
+EXEC sp_configure "external scripts enabled", 1
+RECONFIGURE WITH OVERRIDE
+
+/*4. Now, check the configuration settings for external scripts again*/
+sp_configure
+
+/*5a. "config_value"has been reconfigured it remains the "run_value"*/
+
+/*5b. To reconfigure the "run_value", Restart the SQLServer2016 instance in the SERVICES*/
+
+/*6. Check now if R code will run in SQL Server after changing the configuration settings*/
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'print("This is R Services class");'
+
+
+/* ----Run more R codes in SQL Server using the R Services -----*/
+
+/*Add two numbers*/
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'print(23.9 + 11.6);'
+
+/*Create a vector*/
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'
+		apple <- c("red","green","yellow")
+		print(apple);'
+
+/* Create a vector */
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'
+		M = matrix( c("a","a","b","c","b","a"), nrow=2,ncol=3,byrow = TRUE)
+		print(M);'
+
+/* Create series starting from 1 to 5 at a step of 0.01*/
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'OutputDataSet <- data.frame(seq(1,5,0.01));'
+
+/*Add column name using the following code*/
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'OutputDataSet <- data.frame(seq(1,5,0.1));'
+WITH RESULT SETS((nameData INT));
+
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'
+	BMI <- data.frame(
+		gender = c("Male", "Male","Female"),
+		height = c(152, 171.5, 165),
+		weight = c(81,93, 78),
+		Age =c(42,38,26)
+		)
+	
+	print(BMI);'
+
+
+/*Rewrite the script using "DECLARE and SET" procedure*/
+DECLARE @rscript NVARCHAR(MAX)
+SET @rscript = N'
+		OutputDataSet <- data.frame(
+		gender = c("Male", "Male","Female"),
+		height = c(152, 171.5, 165),
+		weight = c(81,93, 78),
+		Age = c(42,38,26));'
+
+EXEC sp_execute_external_script
+@language = N'R',
+@script =  @rscript
+
+/*Rewrite the script using "DECLARE and SET" procedures and add column names using the following code*/
+DECLARE @rscript NVARCHAR(MAX)
+SET @rscript = N'
+		OutputDataSet <- data.frame(
+		gender = c("Male", "Male","Female"),
+		height = c(152, 171.5, 165),
+		weight = c(81,93, 78),
+		Age = c(42,38,26));'
+
+EXEC sp_execute_external_script
+@language = N'R',
+@script =  @rscript
+
+WITH RESULT SETS((
+		Gender VARCHAR(200),
+		Height FLOAT,
+		Weight INT,
+		Age INT))
+
+
+/* ----Query the AdventureWorks database using the R Services -----*/
+
+/*1. Check the table of "SalesPerson" under "Sales" schema using R services*/
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'OutputDataSet <- InputDataSet',
+@input_data_1 = N'
+SELECT * 
+FROM Sales.SalesPerson;'
+
+/*2. Select only five (5) tables using R Services*/
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'OutputDataSet <- InputDataSet',
+@input_data_1 = N'
+SELECT BusinessEntityID, TerritoryID, SalesQuota, SalesYTD, SalesLastYear
+FROM Sales.SalesPerson;'
+
+/*Add column names using the following code*/
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'OutputDataSet <- InputDataSet',
+@input_data_1 = N'
+SELECT BusinessEntityID, TerritoryID, SalesQuota, SalesYTD, SalesLastYear
+FROM Sales.SalesPerson;'
+WITH RESULT SETS((BusinessEntityID INT, TerritoryID INT, SalesQuota FLOAT, SalesYTD FLOAT, SalesLastYear FLOAT))
+
+/*3. Remove null values from the selected tables using R Services*/
+EXEC sp_execute_external_script
+@language = N'R',
+@script = N'OutputDataSet <- InputDataSet',
+@input_data_1 = N'
+SELECT BusinessEntityID, TerritoryID, SalesQuota, SalesYTD, SalesLastYear
+FROM Sales.SalesPerson
+WHERE TerritoryID IS NOT NULL;'
+WITH RESULT SETS((BusinessEntityID INT, TerritoryID INT, SalesQuota FLOAT, SalesYTD FLOAT, SalesLastYear FLOAT))
+
+/*--------------------------------------------------------*/
+
+/*Rewrite the script using "DECLARE and SET" procedures*/
+DECLARE @rscript NVARCHAR(MAX)
+DECLARE @sql_script NVARCHAR(MAX)
+SET @rscript = N'OutputDataSet <- InputDataSet'
+SET @sql_script = N'
+SELECT BusinessEntityID, TerritoryID, SalesQuota, SalesYTD, SalesLastYear
+FROM Sales.SalesPerson
+WHERE TerritoryID IS NOT NULL;'
+
+EXEC sp_execute_external_script
+@language = N'R',
+@script = @rscript,
+@input_data_1 = @sql_script
+WITH RESULT SETS((BusinessEntityID INT, TerritoryID INT, SalesQuota FLOAT, SalesYTD FLOAT, SalesLastYear FLOAT))
+
+
+
+
