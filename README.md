@@ -1,4 +1,5 @@
 # Introduction-to-R-Services-in-Microsoft-SQL-Server-2016
+My YouTube video for the R Services in SQL Server 2016 Tutorial for Absolute Beginners (https://www.youtube.com/watch?v=5IIPCfNGWHY) uses the following resources: 
 
 ## RESOURCES
 ### Microsoft SQL SERVER 2016: 
